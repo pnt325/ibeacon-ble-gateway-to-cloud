@@ -9,6 +9,8 @@
 #define _BLE_H_
 
 #include <stdint.h>
+#include "esp_ibeacon_api.h"
+#include "ble_beacon.h"
 
 #define BLE_BEACON  0
 #define BLE_SERVER  1
@@ -16,7 +18,7 @@
 
 void BLE_init(uint8_t mode);
 
-void BLE_start(void);
+void BLE_start(beacon_callback_t callback);
 void BLE_start_config(void);
 void BLE_stop(void);
 

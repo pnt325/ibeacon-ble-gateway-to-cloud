@@ -21,7 +21,7 @@ void BLE_init(uint8_t mode)
     ble_mode = mode;
 }
 
-void BLE_start(void)
+void BLE_start(beacon_callback_t callback)
 {
     switch (ble_mode)
     {
@@ -29,7 +29,7 @@ void BLE_start(void)
         BLE_SERVER_start();
         break;
     case BLE_BEACON:
-        BLE_BEACON_start();
+        BLE_BEACON_start(callback);
         break;
     default:
         ESP_ERROR_CHECK(ESP_FAIL);

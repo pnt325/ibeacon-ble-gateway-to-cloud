@@ -10,6 +10,8 @@
     "freertos.h": "c",
     "*.inc": "c",
     "complex": "c",
-    "ble_server.h": "c"
+    "ble_server.h": "c",
+    "ble.h": "c",
+    "wifi.h": "c"
   }
 }

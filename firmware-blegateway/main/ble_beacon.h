@@ -8,9 +8,12 @@
 #ifndef _BLE_BEACON_H_
 #define _BLE_BEACON_H_
 
+#include <stdint.h>
+#include "ble_beacon_data.h"
 
-void BLE_BEACON_start(void);
+typedef void(*beacon_callback_t)(beacon_data_t* data);
+
+void BLE_BEACON_start(beacon_callback_t event);
 void BLE_BEACON_stop(void);
-
 
 #endif /*_BLE_BEACON_H_*/
