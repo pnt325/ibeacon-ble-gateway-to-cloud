@@ -107,8 +107,8 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                 tmp  = (uint8_t*)&minor;
                 bdata.udata[2] = tmp[0];
                 bdata.udata[3] = tmp[1];
+                bdata.rssi = ibeacon_data->ibeacon_vendor.measured_power;
                 
-                // bdata.rssi = ibeacon_data->ibeacon_vendor.measured_power;
                 if (beacon_event)
                 {
                     beacon_event(&bdata);
@@ -165,7 +165,6 @@ void ble_ibeacon_appRegister(void)
         ESP_LOGE(DEMO_TAG, "gap register error: %s", esp_err_to_name(status));
         return;
     }
-
 }
 
 void BLE_BEACON_start(beacon_callback_t event)

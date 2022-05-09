@@ -23,6 +23,9 @@
 #include "ble.h"
 #include "mqtt.h"
 #include "ble_beacon_data.h"
+#include "wifi_config.h"
+#include "wifi_ap.h"
+#include "nvs_data.h"
 
 static const char* APP_TAG = "APP_MAIN";
 
@@ -41,11 +44,15 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-
-
     
     ESP_ERROR_CHECK(esp_read_mac(mac, ESP_MAC_WIFI_STA));
     ESP_LOGI(APP_TAG, "WIFI MAC address: %02x-%02x-%02x-%02x-%02x-%02x", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
+
+    NVS_DATA_init();
+    WIFI_AP_init();
+    WIFI_AP_start();
+    WIFI_CONFIG_init();
+    return;
 
     WIFI_init((const uint8_t*)"TP-Link_5BC8", (const uint8_t*)"33714592");
     WIFI_start(wifi_connect_callback);
@@ -74,6 +81,14 @@ static void wifi_connect_callback(bool connect)
 
 static void beacon_event_callback(beacon_data_t* data)
 {
+    // TODO Handle the beacon message.
+    // Received the beacon  message callback
+    // Handle by compare beacon UUID with whitelist then add
+    // to the whitelist item data update with flag notify that should be sync to the MQTT
+    //
+
+
+
     char buf[256] = "test data";
 
     snprintf(buf, 256, "{\"addr\":\"%02x-%02x-%02x-%02x-%02x-%02x\",\"uuid\":\"%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\",\"data\":\"%02x %02x %02x %02x\"}",

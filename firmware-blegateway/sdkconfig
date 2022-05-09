@@ -139,12 +139,15 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Example Configuration
+# BLE Gateway Configuration
 #
-CONFIG_ESP_WIFI_SSID="TP-Link_5BC8"
-CONFIG_ESP_WIFI_PASSWORD="33714592"
+CONFIG_ESP_WIFI_AP_SSID="BGATEWAY"
+CONFIG_ESP_WIFI_AP_PASSWORD="password2342"
+CONFIG_ESP_WIFI_AP_CHANNEL=1
+CONFIG_ESP_MAX_AP_STA_CONN=1
 CONFIG_ESP_MAXIMUM_RETRY=5
-# end of Example Configuration
+CONFIG_BLE_GATEWAY_ADV_NAME="BLE Gateway"
+# end of BLE Gateway Configuration
 
 #
 # Compiler options
