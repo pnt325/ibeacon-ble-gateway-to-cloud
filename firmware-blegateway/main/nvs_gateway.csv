@@ -2,4 +2,7 @@ key,type,encoding,value
 user_config,namespace,,
 wifi_ssid,data,string,wifi_name
 wiif_password,data,string,password
+mqtt_addr,data,string,mqtt_addr
+mqtt_usr,data,string,mqtt_usr
+mqtt_pass,data,string,mqtt_pass
 init_config,data,u8,0

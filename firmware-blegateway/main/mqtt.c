@@ -96,16 +96,20 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-void MQTT_init(mqtt_event_cb_t event)
+void MQTT_init(mqtt_event_cb_t event, const char* host, const char* user, const char* password)
 {
     //! Create semaphore
     publish_block = xSemaphoreCreateMutex();
 
-    //Template: "mqtts://flavio.com:8883"
+    // const esp_mqtt_client_config_t mqtt_cfg = {
+    //     .uri = "mqtt://192.168.0.36:1883",
+    //     .username = "uwt32",
+    //     .password = "wt32"
+    // };
     const esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = "mqtt://192.168.0.36:1883",
-        .username = "uwt32",
-        .password = "wt32"
+        .uri = host,
+        .username = user,
+        .password = password
     };
 
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
@@ -121,7 +125,7 @@ bool MQTT_publish(const char* topic, const char* data, uint16_t len)
 {
     if(mqtt_connect == false)
     {
-        ESP_LOGW(TAG, "Publish reject: mqtt disconnected");
+        // ESP_LOGW(TAG, "Publish reject: mqtt disconnected");
         return false;
     }
 

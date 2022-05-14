@@ -4,7 +4,7 @@
   "idf.openOcdConfigs": [
     "board/esp32c3-ftdi.cfg"
   ],
-  "idf.portWin": "COM8",
+  "idf.portWin": "COM5",
   "idf.flashType": "UART",
   "files.associations": {
     "freertos.h": "c",
@@ -15,6 +15,19 @@
     "wifi.h": "c",
     "esp_gatt_common_api.h": "c",
     "sdkconfig.h": "c",
-    "esp_http_server.h": "c"
+    "esp_http_server.h": "c",
+    "esp_err.h": "c",
+    "bg22_config.h": "c",
+    "bg22_led.h": "c",
+    "nvs_data.h": "c",
+    "array": "c",
+    "string": "c",
+    "string_view": "c",
+    "bitset": "c",
+    "memory": "c",
+    "random": "c",
+    "future": "c",
+    "optional": "c",
+    "*.ipp": "c"
   }
 }
