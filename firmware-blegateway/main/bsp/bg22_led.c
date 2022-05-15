@@ -9,6 +9,7 @@
 #include "bg22_config.h"
 #include "esp_err.h"
 #include "driver/gpio.h"
+#include "esp_log.h"
 
 #define BG22_LED_PIN_SEL    ((1ull << BG22_GPIO_LED_GREEN_IO) | \
                              (1ull << BG22_GPIO_LED_RED_IO) |   \
@@ -19,6 +20,8 @@ const static uint8_t leds[] = {
     [LedBlue]  = BG22_GPIO_LED_BLUE_IO,
     [LedGreen] = BG22_GPIO_LED_GREEN_IO
 };
+
+static uint8_t led_states[_LedNum];
 
 void bg22_led_init(void)
 {
@@ -34,18 +37,20 @@ void bg22_led_init(void)
 void bg22_led_on(led_t led) {
     bg22_assert(led < _LedNum);
     gpio_set_level(leds[led], 1);
+    led_states[led] = 1;
 }
 
 void bg22_led_off(led_t led) {
     bg22_assert(led < _LedNum);
     gpio_set_level(leds[led], 0);
+    led_states[led] = 0;
 }
 
 void bg22_led_toggle(led_t led) {
     bg22_assert(led < _LedNum);
-    if(gpio_get_level(leds[led])) {
-        gpio_set_level(leds[led], 0);
+    if(led_states[led]) {
+        bg22_led_off(led);
     } else {
-        gpio_set_level(leds[led], 1);
+        bg22_led_on(led);
     }
 }

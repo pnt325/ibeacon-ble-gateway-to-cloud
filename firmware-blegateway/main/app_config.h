@@ -12,4 +12,10 @@
 #define APP_WIFI_AP_NAME        "BGATEWAY"
 #define APP_WIFI_AP_PASSWORD    "password2342"
 
+#define APP_BUTTON_RESET_PERIOD             5000    // ms
+#define APP_TASK_BUTTON_LED_SLEEP_PERIOD    50      // ms
+#define APP_LED_BLINKING_PERIOD             250     // ms
+
+#define APP_GET_UNKNOW_DEVICE_TOPIC         "internal_net/req/cl/%02x:%02x:%02x:%02x:%02x:%02x"
+
 #endif /*_APP_CONFIG_H_*/

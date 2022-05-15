@@ -9,6 +9,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
+#include "freertos/queue.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -27,6 +28,8 @@
 #include "nvs_data.h"
 #include "bg22_led.h"
 #include "bg22_button.h"
+#include "app_config.h"
+#include "app_led.h"
 
 static const char* APP_TAG = "APP_MAIN";
 
@@ -34,6 +37,9 @@ uint8_t mac[8] = {0};
 
 static void wifi_connect_callback(bool connect);
 static void beacon_event_callback(beacon_data_t* data);
+
+static void mqtt_event_connected(void);
+static void mqtt_event_disconnected(void);
 
 static QueueHandle_t btn_queue;
 
@@ -56,11 +62,12 @@ void app_main(void)
     ESP_LOGI(APP_TAG, "WIFI MAC address: %02x-%02x-%02x-%02x-%02x-%02x", mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
 
     // LED Initialize
-    bg22_led_init();
+    app_led_init();
 
     // Button Initlialize
     bg22_button_init(ButtonUser, button_callback);
-    bg22_button_enabled(ButtonUser);
+    btn_queue = xQueueCreate(2, sizeof(button_state_t));
+    bg22_assert(btn_queue);
 
     // NVS Data Initialize 
     NVS_DATA_init();
@@ -91,21 +98,62 @@ void app_main(void)
         
         wifi_name = NULL;
         wifi_pass = NULL;
+
+        // Enabled button
+        bg22_button_enabled(ButtonUser);
+
+        // Blinking LED until connected to broker.
+        app_led_ctrl(LedGreen, LedCtrlBlink, APP_LED_BLINKING_PERIOD);
+        app_led_ctrl(LedRed, LedCtrlOff, 0);
+        app_led_ctrl(LedBlue, LedCtrlOff, 0);
     } else {
         ESP_LOGI(APP_TAG, "Start WIFI provisioning\n");
         WIFI_AP_init();
         WIFI_AP_start();
         WIFI_CONFIG_init();
+        
+        app_led_ctrl(LedRed, LedCtrlOn, 0);
+        app_led_ctrl(LedGreen, LedCtrlOff, 0);
+        app_led_ctrl(LedBlue, LedCtrlOff, 0);
     }
-}
 
-static void mqtt_connected(uint8_t connect)
-{
-    ESP_LOGI(APP_TAG, "MQTT connection = %s", connect ? "True" : "False");
-    if(connect) {
-        // Get the device authentication
-        // Trigger available device and start becon scan
+    // Will be continue handle button and LED blinking control.
+    button_state_t btn_state_old = ButtonReleased;
+    uint32_t btn_press_period = esp_log_timestamp();
+    while(true) {
+        button_state_t btn_state_cur;   // Button current state
+        if(xQueueReceive(btn_queue, &btn_state_cur, 0) == pdTRUE)  {
+            // Button state change handle.
+            if(btn_state_cur != btn_state_old) {
+                ESP_LOGI(APP_TAG, "Button %s\n", btn_state_cur == ButtonPressed ? "pressed" : "released");
+                btn_state_old = btn_state_cur;
+                if(btn_state_cur == ButtonPressed) {
+                    btn_press_period = esp_log_timestamp();
+                } else {
+                    // TODO handle button release event
+                    uint32_t hold_time = (uint32_t)(esp_log_timestamp() - btn_press_period);
+                    ESP_LOGI(APP_TAG, "Button hold period: %d\n", hold_time);
 
+                    // TODO Reset the device
+                    if(hold_time >= APP_BUTTON_RESET_PERIOD) {
+                        NVS_DATA_init_config_set(0);
+                        esp_restart();
+                    } else {
+
+                    }
+                }
+            }
+        }
+
+        if(btn_state_old == ButtonPressed) {
+            uint32_t ms = (uint32_t)(esp_log_timestamp() - btn_press_period);
+            if(ms >= APP_BUTTON_RESET_PERIOD) {
+                // TODO Handle the reach time button hold time for reset.
+            }
+        }
+
+        app_led_handle();
+        vTaskDelay(pdMS_TO_TICKS(APP_TASK_BUTTON_LED_SLEEP_PERIOD));
     }
 }
 
@@ -132,7 +180,11 @@ static void wifi_connect_callback(bool connect)
         NVS_DATA_mqtt_user_get(mqtt_user);
         NVS_DATA_mqtt_pass_get(mqtt_pass);
 
-        MQTT_init(mqtt_connected, (const char*)mqtt_host, (const char*)mqtt_user, (const char*)mqtt_pass);
+        mqtt_event_t mqtt_event;
+        mqtt_event.connected = mqtt_event_connected;
+        mqtt_event.disconnected = mqtt_event_disconnected;
+
+        MQTT_init(&mqtt_event, (const char*)mqtt_host, (const char*)mqtt_user, (const char*)mqtt_pass);
         memset(mqtt_host, 0, 32);
         memset(mqtt_user, 0, 32);
         memset(mqtt_pass, 0, 32);
@@ -152,6 +204,7 @@ static void beacon_event_callback(beacon_data_t* data)
     // Handle by compare beacon UUID with whitelist then add
     // to the whitelist item data update with flag notify that should be sync to the MQTT
 
+/*
     char buf[256] = "test data";
 
     snprintf(buf, 256, "{\"addr\":\"%02x-%02x-%02x-%02x-%02x-%02x\",\"uuid\":\"%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\",\"data\":\"%02x %02x %02x %02x\"}",
@@ -171,6 +224,7 @@ static void beacon_event_callback(beacon_data_t* data)
     {
         ESP_LOGI(APP_TAG,"Publish message failure");
     }
+*/
 
     // esp_ble_ibeacon_t *ibeacon_data = (esp_ble_ibeacon_t*)(scan_result->scan_rst.ble_adv);
     // ESP_LOGI(DEMO_TAG, "----------iBeacon Found----------");
@@ -183,4 +237,12 @@ static void beacon_event_callback(beacon_data_t* data)
     // ESP_LOGI(DEMO_TAG, "Minor: 0x%04x (%d)", minor, minor);
     // ESP_LOGI(DEMO_TAG, "Measured power (RSSI at a 1m distance):%d dbm", ibeacon_data->ibeacon_vendor.measured_power);
     // ESP_LOGI(DEMO_TAG, "RSSI of packet:%d dbm, distance: %d", scan_result->scan_rst.rssi, scan_result->scan_rst.rssi/ibeacon_data->ibeacon_vendor.measured_power);
+}
+
+static void mqtt_event_connected(void) {
+    app_led_ctrl(LedGreen, LedCtrlOn, 0);
+}
+
+static void mqtt_event_disconnected(void) {
+    app_led_ctrl(LedGreen, LedCtrlBlink, APP_LED_BLINKING_PERIOD);
 }

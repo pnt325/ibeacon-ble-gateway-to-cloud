@@ -15,7 +15,7 @@ typedef struct
     uint8_t addr[6];
     uint8_t uuid[16];
     uint8_t udata[4];
-    uint8_t rssi;
+    uint8_t rssi;       
 } beacon_data_t;
 
 #endif /*_BLE_BEACON_DATA_H_*/
