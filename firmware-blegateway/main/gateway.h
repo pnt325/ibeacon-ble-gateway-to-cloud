@@ -17,6 +17,7 @@ void gateway_init(void);
  * @param data Json data
  */
 void gateway_init_device(char* data);
-void gateway_device_data_set(beacon_data_t* data);
+
+void gateway_beacon_data_set(beacon_data_t* data);
 
 #endif /*_GATE_WAY_H_*/

@@ -251,7 +251,7 @@ bool MQTT_publish(const char* topic, const char* data, uint16_t len)
 
     // Block MQTT public
     xSemaphoreTake(publish_block, portMAX_DELAY);
-    ESP_LOGI(TAG, "Publish: %s: %s", topic, data);
+    ESP_LOGI(TAG, "Publish: %s\n\t%s", topic, data);
 
     if(esp_mqtt_client_publish(mqtt_client, topic, data, len, 0, 0) < 0) {
         goto exit;
@@ -317,7 +317,11 @@ bool MQTT_unsubscribe(const char* topic) {
     return retval;
 }
 
-void MQTT_clear_connnect(void)
-{
-    mqtt_connect = false;
+bool MQTT_connect(void) {
+    return mqtt_connect;
 }
+
+// void MQTT_clear_connnect(void)
+// {
+//     mqtt_connect = false;
+// }

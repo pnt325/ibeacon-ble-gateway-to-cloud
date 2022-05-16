@@ -25,5 +25,6 @@ void MQTT_init(mqtt_event_t* event, const char* host, const char* user, const ch
 bool MQTT_publish(const char* topic, const char* data, uint16_t len);
 bool MQTT_subscribe(const char* topic, mqtt_data_callback_t callback);
 bool MQTT_unsubscribe(const char* topic);
+bool MQTT_connect(void);
 
 #endif /*_MQTT_H_*/

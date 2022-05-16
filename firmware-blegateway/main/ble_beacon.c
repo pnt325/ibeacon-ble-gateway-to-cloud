@@ -101,12 +101,12 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                 uint16_t minor = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.minor);
 
                 uint8_t* tmp  = (uint8_t*)&major;
-                bdata.udata[0] = tmp[0];
-                bdata.udata[1] = tmp[1];
+                bdata.data[0] = tmp[0];
+                bdata.data[1] = tmp[1];
 
                 tmp  = (uint8_t*)&minor;
-                bdata.udata[2] = tmp[0];
-                bdata.udata[3] = tmp[1];
+                bdata.data[2] = tmp[0];
+                bdata.data[3] = tmp[1];
                 bdata.rssi = ibeacon_data->ibeacon_vendor.measured_power;
                 
                 if (beacon_event)

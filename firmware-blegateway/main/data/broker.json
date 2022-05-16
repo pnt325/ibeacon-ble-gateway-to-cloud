@@ -1,0 +1,39 @@
+{
+    "knownUUIDs": [
+        {
+            "uuid": "72b509fcaca645608e40dd60b33ea7cc",
+            "data": [
+                {
+                    "key": "sos",
+                    "valueType": "string",
+                    "dataType": 1
+                },
+                {
+                    "key": "battery",
+                    "valueType": "float",
+                    "dataType": 2
+                }
+            ]
+        },
+        {
+            "uuid": "b1c310c5a57510a7c29cc1a5c28fbda2",
+            "data": [
+                {
+                    "key": "temp",
+                    "valueType": "float",
+                    "dataType": 1
+                },
+                {
+                    "key": "acc",
+                    "valueType": "int",
+                    "dataType": 2
+                },
+                {
+                    "key": "xyz",
+                    "valueType": "int",
+                    "dataType": 3
+                }
+            ]
+        }
+    ]
+}
