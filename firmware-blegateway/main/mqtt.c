@@ -58,11 +58,12 @@ static void mqtt_event_callback(void) {
         xSemaphoreTake(topic_block, portMAX_DELAY);
         mqtt_sub_handler_t* handler = sub_handler;
 
-        ESP_LOGI(TAG, "Re-subscribe topic\n");
+        ESP_LOGI(TAG, "Re-subscribe topic, %u", handler);
+        // ESP_LOGI(TAG, "\t%s", handler->topic);
         while(handler) {
             int msg_id = esp_mqtt_client_subscribe(mqtt_client, handler->topic, 0);
             bg22_assert(msg_id >= 0);
-            ESP_LOGI(TAG, "\t- %s\n", handler->topic);
+            ESP_LOGI(TAG, "\t%s", handler->topic);
             handler = handler->next;
         }   
 
@@ -80,22 +81,42 @@ static void mqtt_sub_add_topic(const char* topic, mqtt_data_callback_t callback)
 
     xSemaphoreTake(topic_block, portMAX_DELAY);
 
-    mqtt_sub_handler_t* handler = sub_handler;
-    while(handler) {
-        handler = handler->next;
+    // Fist time add topic
+    if(!sub_handler)
+    {
+        sub_handler = (mqtt_sub_handler_t *)malloc(sizeof(mqtt_sub_handler_t));
+        bg22_assert(sub_handler);
+
+        size_t len = strlen(topic);
+        sub_handler->topic = (char *)malloc(len + 1);
+        bg22_assert(sub_handler->topic);
+        memset(sub_handler->topic, 0, len + 1);
+        memcpy(sub_handler->topic, topic, len);
+        sub_handler->callback = callback;
+        sub_handler->next = NULL;
+        ESP_LOGI(TAG, "Sub topic: %s", sub_handler->topic);
     }
+    else
+    {
+        mqtt_sub_handler_t *handler = sub_handler;
+        while (handler)
+        {
+            handler = handler->next;
+        }
 
-    // add topic
-    handler = (mqtt_sub_handler_t *)malloc(sizeof(mqtt_sub_handler_t));
-    bg22_assert(handler);
+        // add topic
+        handler = (mqtt_sub_handler_t *)malloc(sizeof(mqtt_sub_handler_t));
+        bg22_assert(handler);
 
-    size_t len = strlen(topic);
-    handler->topic = (char *)malloc(len + 1);
-    bg22_assert(handler->topic);
-    memset(handler->topic, 0, len + 1);
-    memcpy(handler->topic, topic, len);
-    handler->callback = callback;
-    handler->next = NULL;
+        size_t len = strlen(topic);
+        handler->topic = (char *)malloc(len + 1);
+        bg22_assert(handler->topic);
+        memset(handler->topic, 0, len + 1);
+        memcpy(handler->topic, topic, len);
+        handler->callback = callback;
+        handler->next = NULL;
+        ESP_LOGI(TAG, "Sub topic: %s", handler->topic);
+    }
 
     xSemaphoreGive(topic_block);
 }
@@ -111,6 +132,8 @@ static void mqtt_sub_remove_topic(const char* topic) {
             free(handler->topic);
             free(handler);
             handler = handler->next;
+
+            ESP_LOGI(TAG, "Un-sub topic: %s", topic);
             break;
         }
         handler = handler->next;
@@ -121,10 +144,6 @@ static void mqtt_sub_remove_topic(const char* topic) {
 
 static mqtt_data_callback_t mqtt_get_callback(char* topic, size_t topic_len) {
     mqtt_data_callback_t callback = NULL;
-
-    // Block sub_handler data
-    // xSemaphoreTake(topic_block, portMAX_DELAY);
-
     mqtt_sub_handler_t* handler = sub_handler;
     while(handler) {
         if(memcmp(topic, handler->topic, topic_len) == 0) {
@@ -133,10 +152,6 @@ static mqtt_data_callback_t mqtt_get_callback(char* topic, size_t topic_len) {
         }
         handler = handler->next;
     }
-
-    // Release sub_handler data
-    // xSemaphoreGive(topic_block);
-
     return callback;
 }
 
@@ -219,11 +234,17 @@ void MQTT_init(mqtt_event_t* event, const char* host, const char* user, const ch
     bg22_assert(topic_block);
     bg22_assert(sub_usub_block);
 
+    ESP_LOGI(TAG, "MQTT configure");
+    ESP_LOGI(TAG, "\turi: %s", host);
+    ESP_LOGI(TAG, "\tuser: %s", user);
+    ESP_LOGI(TAG, "\tpass: %s", password);
+
     // MQTT configure
     const esp_mqtt_client_config_t mqtt_cfg = {
         .uri = host,
         .username = user,
-        .password = password
+        .password = password,
+        .keepalive = 10
     };
 
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
@@ -258,7 +279,7 @@ bool MQTT_publish(const char* topic, const char* data, uint16_t len)
     }
 
     // wait for message publish finish, timeout 500ms
-    EventBits_t bit = xEventGroupWaitBits(event_group, MQTT_EVENT_PUB_BIT, pdTRUE, pdTRUE, pdMS_TO_TICKS(500));
+    EventBits_t bit = xEventGroupWaitBits(event_group, MQTT_EVENT_PUB_BIT, pdTRUE, pdTRUE, pdMS_TO_TICKS(1000));
     if(bit & MQTT_EVENT_PUB_BIT) {
         retval = true;
         goto exit;
@@ -278,19 +299,15 @@ bool MQTT_subscribe(const char* topic, mqtt_data_callback_t callback) {
     // Block subscribte
     xSemaphoreTake(sub_usub_block, portMAX_DELAY);
     if(esp_mqtt_client_subscribe(mqtt_client, topic, 0) < 0) {
+        ESP_LOGE(TAG, "sub topic failure");
         goto exit;
     }
 
-    // Wait for subscribe finish
-    EventBits_t bit = xEventGroupWaitBits(event_group, MQTT_EVENT_SUB_BIT, pdTRUE, pdTRUE, pdMS_TO_TICKS(500));
-    if(bit & MQTT_EVENT_SUB_BIT) {
-        retval = true;
-        mqtt_sub_add_topic(topic, callback);
-        goto exit;
-    }
+    retval = true;
+    mqtt_sub_add_topic(topic, callback);
 
-    exit:
     // Un-Block subscribe
+    exit:
     xSemaphoreGive(sub_usub_block);
     return retval;
 }

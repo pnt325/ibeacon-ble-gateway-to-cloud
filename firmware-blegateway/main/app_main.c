@@ -30,6 +30,7 @@
 #include "bg22_button.h"
 #include "app_config.h"
 #include "app_led.h"
+#include "gateway.h"
 
 static const char* APP_TAG = "APP_MAIN";
 
@@ -76,6 +77,9 @@ void app_main(void)
     NVS_DATA_init_config_get(&is_config);
     if(is_config) {
         ESP_LOGI(APP_TAG, "Start Gateway\n");
+
+        gateway_init();
+
         char* wifi_name = (char*)malloc(33);
         char* wifi_pass = (char*)malloc(65);
         bg22_assert(wifi_name);
@@ -88,8 +92,6 @@ void app_main(void)
 
         WIFI_init((const uint8_t *)wifi_name, (const uint8_t *)wifi_pass);
         WIFI_start(wifi_connect_callback);
-        // BLE_init(BLE_BEACON);
-        // BLE_start(beacon_event_callback);
 
         memset(wifi_name, 0, 33);
         memset(wifi_pass, 0, 65);
@@ -162,85 +164,78 @@ static void wifi_connect_callback(bool connect)
     static bool first_connected = true;
     ESP_LOGI(APP_TAG, "WIFI connection = %s", connect ? "True" : "False");
 
-    if(first_connected)
+    if (connect)
     {
-        first_connected = false;
+        if (first_connected)
+        {
+            first_connected = false;
 
-        char* mqtt_host = (char*)malloc(32);
-        char* mqtt_user = (char*)malloc(32);
-        char* mqtt_pass = (char*)malloc(32);
-        bg22_assert(mqtt_host);
-        bg22_assert(mqtt_user);
-        bg22_assert(mqtt_pass);
-        memset(mqtt_host, 0, 32);
-        memset(mqtt_user, 0, 32);
-        memset(mqtt_pass, 0, 32);
+            char *mqtt_host = (char *)malloc(32);
+            char *mqtt_user = (char *)malloc(32);
+            char *mqtt_pass = (char *)malloc(32);
+            bg22_assert(mqtt_host);
+            bg22_assert(mqtt_user);
+            bg22_assert(mqtt_pass);
+            memset(mqtt_host, 0, 32);
+            memset(mqtt_user, 0, 32);
+            memset(mqtt_pass, 0, 32);
 
-        NVS_DATA_mqtt_addr_get(mqtt_host);
-        NVS_DATA_mqtt_user_get(mqtt_user);
-        NVS_DATA_mqtt_pass_get(mqtt_pass);
+            NVS_DATA_mqtt_addr_get(mqtt_host);
+            NVS_DATA_mqtt_user_get(mqtt_user);
+            NVS_DATA_mqtt_pass_get(mqtt_pass);
 
-        mqtt_event_t mqtt_event;
-        mqtt_event.connected = mqtt_event_connected;
-        mqtt_event.disconnected = mqtt_event_disconnected;
+            mqtt_event_t mqtt_event;
+            mqtt_event.connected = mqtt_event_connected;
+            mqtt_event.disconnected = mqtt_event_disconnected;
 
-        MQTT_init(&mqtt_event, (const char*)mqtt_host, (const char*)mqtt_user, (const char*)mqtt_pass);
-        memset(mqtt_host, 0, 32);
-        memset(mqtt_user, 0, 32);
-        memset(mqtt_pass, 0, 32);
-        free(mqtt_host);
-        free(mqtt_user);
-        free(mqtt_pass);
-        mqtt_host = NULL;
-        mqtt_user = NULL;
-        mqtt_pass = NULL;
+            MQTT_init(&mqtt_event, (const char *)mqtt_host, (const char *)mqtt_user, (const char *)mqtt_pass);
+            memset(mqtt_host, 0, 32);
+            memset(mqtt_user, 0, 32);
+            memset(mqtt_pass, 0, 32);
+            free(mqtt_host);
+            free(mqtt_user);
+            free(mqtt_pass);
+            mqtt_host = NULL;
+            mqtt_user = NULL;
+            mqtt_pass = NULL;
+        }
     }
 }
 
 static void beacon_event_callback(beacon_data_t* data)
 {
-    // TODO Handle the beacon message.
-    // Received the beacon  message callback
-    // Handle by compare beacon UUID with whitelist then add
-    // to the whitelist item data update with flag notify that should be sync to the MQTT
+    gateway_beacon_data_set(data);
+}
 
-/*
-    char buf[256] = "test data";
-
-    snprintf(buf, 256, "{\"addr\":\"%02x-%02x-%02x-%02x-%02x-%02x\",\"uuid\":\"%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\",\"data\":\"%02x %02x %02x %02x\"}",
-             data->addr[0], data->addr[1], data->addr[2], data->addr[3], data->addr[4], data->addr[5],
-             data->uuid[0], data->uuid[1],  data->uuid[2],  data->uuid[3],  data->uuid[4],  data->uuid[5],  data->uuid[6],  data->uuid[7],
-             data->uuid[8], data->uuid[9], data->uuid[10], data->uuid[11], data->uuid[12], data->uuid[13], data->uuid[14], data->uuid[15],
-             data->udata[0], data->udata[1], data->udata[2], data->udata[3]);
-
-    char topic[32] = "ble_gateway";
-    snprintf(topic, 32, "ble_gateway/%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-    if(MQTT_publish(topic, buf, strlen(buf)))
-    {
-        ESP_LOGI(APP_TAG,"Publish message: %s", buf);
-    }
-    else
-    {
-        ESP_LOGI(APP_TAG,"Publish message failure");
-    }
-*/
-
-    // esp_ble_ibeacon_t *ibeacon_data = (esp_ble_ibeacon_t*)(scan_result->scan_rst.ble_adv);
-    // ESP_LOGI(DEMO_TAG, "----------iBeacon Found----------");
-    // esp_log_buffer_hex("IBEACON_DEMO: Device address:", scan_result->scan_rst.bda, ESP_BD_ADDR_LEN );
-    // esp_log_buffer_hex("IBEACON_DEMO: Proximity UUID:", ibeacon_data->ibeacon_vendor.proximity_uuid, ESP_UUID_LEN_128);
-
-    // uint16_t major = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.major);
-    // uint16_t minor = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.minor);
-    // ESP_LOGI(DEMO_TAG, "Major: 0x%04x (%d)", major, major);
-    // ESP_LOGI(DEMO_TAG, "Minor: 0x%04x (%d)", minor, minor);
-    // ESP_LOGI(DEMO_TAG, "Measured power (RSSI at a 1m distance):%d dbm", ibeacon_data->ibeacon_vendor.measured_power);
-    // ESP_LOGI(DEMO_TAG, "RSSI of packet:%d dbm, distance: %d", scan_result->scan_rst.rssi, scan_result->scan_rst.rssi/ibeacon_data->ibeacon_vendor.measured_power);
+static void unknown_device_topic_callback(char* data, size_t data_len, char* topic, size_t topic_len)
+{
+    ESP_LOGI(APP_TAG, "MQTT received");
+    ESP_LOGI(APP_TAG, "\tTopic len: %d", topic_len);
+    ESP_LOGI(APP_TAG, "\tData len: %d", data_len);
+    gateway_init_device(data);
 }
 
 static void mqtt_event_connected(void) {
+    static bool first = true;
     app_led_ctrl(LedGreen, LedCtrlOn, 0);
+    if(first)
+    {
+        first = false;
+        BLE_init(BLE_BEACON);
+        BLE_start(beacon_event_callback);
+
+        // subscribe to topic
+        char* topic = (char*)malloc(64);
+        memset(topic,0, 64);
+        snprintf(topic, 64, APP_UNKNOW_DEVICE_TOPIC, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+        ESP_LOGI(APP_TAG, "App sub mqtt topic: %s", topic);
+        bg22_assert(MQTT_subscribe((const char*) topic, unknown_device_topic_callback));
+
+        free(topic);
+    }
+
+    gateway_get_known_uuid();
 }
 
 static void mqtt_event_disconnected(void) {

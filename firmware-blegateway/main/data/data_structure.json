@@ -1,0 +1,69 @@
+{
+    "gateway": {
+        "dev_cnt": 2,
+        "devs": [
+            {
+                "mac": "0A:0B:0C:0D:0E:0F",
+                "uuid": "xxxxxxx",
+                "field_cnt": 2,
+                "fileds": [
+                    {
+                        "key": "key_name",
+                        "format": "string",
+                        "type": "data_type_code",
+                        "ready": true,
+                        "data": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    },
+                    {
+                        "key": "key_name",
+                        "format": "string",
+                        "type": "data_type_code",
+                        "ready": false,
+                        "data": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    }
+                ]
+            },
+            {
+                "mac": "0A:0B:0C:0D:0E:0F",
+                "uuid": "xxxxxxx",
+                "field_cnt": 2,
+                "fileds": [
+                    {
+                        "key": "key_name",
+                        "format": "string",
+                        "type": "data_type_code",
+                        "ready": true,
+                        "data": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    },
+                    {
+                        "key": "key_name",
+                        "format": "string",
+                        "type": "data_type_code",
+                        "ready": false,
+                        "data": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

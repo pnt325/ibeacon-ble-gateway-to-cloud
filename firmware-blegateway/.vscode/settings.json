@@ -4,7 +4,7 @@
   "idf.openOcdConfigs": [
     "board/esp32c3-ftdi.cfg"
   ],
-  "idf.portWin": "COM8",
+  "idf.portWin": "COM12",
   "idf.flashType": "UART",
   "files.associations": {
     "freertos.h": "c",
@@ -30,6 +30,9 @@
     "optional": "c",
     "*.ipp": "c",
     "event_groups.h": "c",
-    "app_led.h": "c"
+    "app_led.h": "c",
+    "app_config.h": "c",
+    "type_traits": "c",
+    "regex": "cpp"
   }
 }

@@ -11,6 +11,6 @@
 #include <stdint.h>
 
 uint8_t* uuid_str2byte(const char* uuid);
-char* uuid_byte2str(uint8_t uuid);
+char* uuid_byte2str(uint8_t* uuid);
 
 #endif /*_UUID_H_*/

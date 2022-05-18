@@ -332,7 +332,7 @@ static bool reset_handle(char *data) {
     }
 
     bool ret = false;
-    cJSON *success = cJSON_GetObjectItemCaseSensitive(root, "Success");
+    cJSON *success = cJSON_GetObjectItem(root, "Success");
     if(success) {
         if (cJSON_IsTrue(success)) {
             return true;

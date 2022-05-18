@@ -20,7 +20,7 @@
 static nvs_handle_t nvs_cfg;
 
 #define NVS_KEY_WIFI_SSID        "wifi_ssid"
-#define NVS_KEY_WIFI_PASSWORD    "wifi_password"
+#define NVS_KEY_WIFI_PASSWORD    "wiif_password"
 #define NVS_KEY_INIT_CONFIG      "init_config"
 #define NVS_KEY_MQTT_ADDR        "mqtt_addr"
 #define NVS_KEY_MQTT_USER        "mqtt_usr"

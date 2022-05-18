@@ -19,6 +19,7 @@ static uint8_t ble_mode = BLE_MODE_INVALID;
 void BLE_init(uint8_t mode)
 {
     ble_mode = mode;
+    ESP_LOGI("BLE", "Init");
 }
 
 void BLE_start(beacon_callback_t callback)

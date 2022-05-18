@@ -18,7 +18,11 @@
 
 #define APP_GATEWAY_DEVICE_MAX              16
 
-#define APP_GET_UNKNOW_DEVICE_TOPIC         "internal_net/req/cl/%02x:%02x:%02x:%02x:%02x:%02x"
+#define APP_UNKNOW_DEVICE_TOPIC             "ble_gateway/%02x:%02x:%02x:%02x:%02x:%02x"
 #define APP_GATEWAY_PUBLISH_TOPIC           "internal_net/req/cl/%02x:%02x:%02x:%02x:%02x:%02x"
+
+#define FW_MAJOR    0
+#define FW_MINOR    0
+#define FW_PATCH    0
 
 #endif /*_APP_CONFIG_H_*/

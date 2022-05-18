@@ -23,7 +23,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 
-static const char* DEMO_TAG = "IBEACON_DEMO";
+static const char* DEMO_TAG = "BLE_BEACON";
 extern esp_ble_ibeacon_vendor_t vendor_config;
 
 static beacon_callback_t beacon_event;
@@ -94,7 +94,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             {
                 esp_ble_ibeacon_t *ibeacon_data = (esp_ble_ibeacon_t*)(scan_result->scan_rst.ble_adv);
                 
-                memcpy(bdata.addr, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
+                memcpy(bdata.mac_addr, scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
                 memcpy(bdata.uuid, ibeacon_data->ibeacon_vendor.proximity_uuid, ESP_UUID_LEN_128);
 
                 uint16_t major = ENDIAN_CHANGE_U16(ibeacon_data->ibeacon_vendor.major);
@@ -107,7 +107,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
                 tmp  = (uint8_t*)&minor;
                 bdata.data[2] = tmp[0];
                 bdata.data[3] = tmp[1];
-                bdata.rssi = ibeacon_data->ibeacon_vendor.measured_power;
+                bdata.type = ibeacon_data->ibeacon_vendor.measured_power;
                 
                 if (beacon_event)
                 {
@@ -193,6 +193,8 @@ void BLE_BEACON_start(beacon_callback_t event)
 #endif
 
     beacon_event = event;
+
+    ESP_LOGI(DEMO_TAG, "Start");
 }
 
 void BLE_BEACON_stop(void)

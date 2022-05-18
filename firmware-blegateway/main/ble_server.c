@@ -26,7 +26,7 @@
 #include "sdkconfig.h"
 
 
-#define GATTS_TAG "BLE"
+#define GATTS_TAG "BLE_SERVER"
 
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
@@ -41,8 +41,8 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 #define GATTS_DEMO_CHAR_VAL_LEN_MAX 0x40
 #define PREPARE_BUF_MAX_SIZE        140
 
-static bool                 is_sync_config      = false;
-static bool                 sync_enable         = false;
+// static bool                 is_sync_config      = false;
+// static bool                 sync_enable         = false;
 static bool                 is_notify           = 0;
 // static SemaphoreHandle_t    send_block;
 // static uint8_t              ble_data[BLE_PTC_DATA_SIZE];
@@ -568,6 +568,8 @@ void BLE_SERVER_start(void)
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(gap_event_handler));
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_A_APP_ID));
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
+
+    ESP_LOGI(GATTS_TAG, "Start");
 }
 
 void BLE_SERVER_stop(void)

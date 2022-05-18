@@ -12,10 +12,10 @@
 
 typedef struct 
 {
-    uint8_t addr[6];
+    uint8_t mac_addr[6];
     uint8_t uuid[16];
     uint8_t data[4];
-    uint8_t rssi;       
+    uint8_t type;       
 } beacon_data_t;
 
 #endif /*_BLE_BEACON_DATA_H_*/

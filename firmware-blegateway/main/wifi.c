@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include "wifi.h"
+#include "app_var.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -25,6 +26,7 @@ static const char *WIFI_TAG = "WIFI";
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 static bool is_wifi_init = false;       // Flag store wifi is initialize
 static wifi_connect_event_t connect_callback;
+uint8_t ip_addr[4];
 
 void WIFI_init(const uint8_t *ssid, const uint8_t *password)
 {
@@ -107,6 +109,15 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
         // TODO callback wifi connected
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(WIFI_TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+        app_var_t var;
+
+        var.u32 = event->ip_info.ip.addr;
+        ip_addr[0] = var.buf[0];
+        ip_addr[1] = var.buf[1];
+        ip_addr[2] = var.buf[2];
+        ip_addr[3] = var.buf[3];
+
+        ESP_LOGI(WIFI_TAG, "Parse IP: %d.%d.%d.%d\n", ip_addr[0],ip_addr[1],ip_addr[2],ip_addr[3]);
 
         if(connect_callback)
         {
