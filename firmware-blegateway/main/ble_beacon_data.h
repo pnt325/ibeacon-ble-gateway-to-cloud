@@ -10,12 +10,12 @@
 
 #include <stdint.h>
 
-typedef struct 
+typedef struct
 {
-    uint8_t mac_addr[6];
-    uint8_t uuid[16];
-    uint8_t data[4];
-    uint8_t type;       
+    uint8_t mac_addr[6]; // Device mac address
+    uint8_t uuid[16];    // Device UUID
+    uint8_t data[4];     // Device data
+    uint8_t type;        // Devce data type, link to RSSI
 } beacon_data_t;
 
 #endif /*_BLE_BEACON_DATA_H_*/

@@ -40,7 +40,7 @@ void BLE_start(beacon_callback_t callback)
 
 void BLE_stop(void)
 {
-switch (ble_mode)
+    switch (ble_mode)
     {
     case BLE_SERVER:
         BLE_SERVER_stop();

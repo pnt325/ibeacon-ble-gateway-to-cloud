@@ -2,8 +2,7 @@ key,type,encoding,value
 user_config,namespace,,
 wifi_ssid,data,string,TP-Link_5BC8
 wiif_password,data,string,33714592
-mqtt_addr,data,string,iothome.digital-media.com
-mqtt_usr,data,string,mosquitto
-mqtt_pass,data,string,iotmosquitto
+mqtt_addr,data,string,192.168.0.36
+mqtt_usr,data,string,uwt32
+mqtt_pass,data,string,wt32
 init_config,data,u8,1
- 

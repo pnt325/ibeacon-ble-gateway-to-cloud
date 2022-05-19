@@ -93,7 +93,7 @@ void gateway_init(void)
     configASSERT(gateway_data_lock);
 
     // Creat task
-    BaseType_t ret = xTaskCreate(task_gateway_handle, "gateway", 512 * 4, NULL, 25, &task_gateway);
+    BaseType_t ret = xTaskCreate(task_gateway_handle, "gateway", 512 * 6, NULL, 25, &task_gateway);
     configASSERT(ret == pdTRUE);
 
     ESP_LOGI(GATEWAY_TAG, "Init");
@@ -178,6 +178,7 @@ static bool device_data_get(device_t *dev, cJSON *json)
             continue;
 
         dev->field_cnt++;
+        field->update = false;
     }
 
     return (dev->field_cnt >= 1);
@@ -286,6 +287,11 @@ void gateway_init_device(char *data)
     }
     cJSON_Delete(json_root);
 
+    if(gateway.dev_cnt)
+    {
+        xEventGroupSetBits(gateway_event, GATEWAY_EVENT_BIT_AUTHENTICATION);
+    }
+
     /* un-lock gateway data */
     xSemaphoreGive(gateway_data_lock);
 }
@@ -326,6 +332,8 @@ void gateway_beacon_data_set(beacon_data_t *beacon)
             // Notify new data received to task publish to broker
             if (MQTT_connect())
             {
+                ESP_LOGI(GATEWAY_TAG, "New device notify");
+                ESP_LOGI(GATEWAY_TAG, "Type: %d, %d", beacon->type, field->type);
                 xEventGroupSetBits(gateway_event, GATEWAY_EVENT_BIT_BEACON_DATA);
             }
 
@@ -379,6 +387,8 @@ static void task_gateway_handle(void *param)
     // Wait for authentication sucecss
     xEventGroupWaitBits(gateway_event, GATEWAY_EVENT_BIT_AUTHENTICATION, pdTRUE, pdTRUE, portMAX_DELAY);
     ESP_LOGI(GATEWAY_TAG, "Device init sucecss!!!\n");
+
+    UBaseType_t uxHighWaterMark;
 
     while (true)
     {
@@ -459,5 +469,8 @@ static void task_gateway_handle(void *param)
             /* un-lock gateway data */
             xSemaphoreGive(gateway_data_lock);
         }
+
+        uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+        ESP_LOGI(GATEWAY_TAG, "Stack: %u", uxHighWaterMark);
     }
 }
