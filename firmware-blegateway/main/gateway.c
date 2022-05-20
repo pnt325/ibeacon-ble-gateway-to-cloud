@@ -179,9 +179,13 @@ static bool device_data_get(device_t *dev, cJSON *json)
 
         dev->field_cnt++;
         field->update = false;
+
+        // Limit of field
+        if(dev->field_cnt >= DATA_FILED_MAX)
+            break;
     }
 
-    return (dev->field_cnt >= 1);
+    return (dev->field_cnt > 0);
 }
 
 static bool init_device(cJSON *json)
@@ -219,11 +223,13 @@ static bool init_device(cJSON *json)
 
         if (device_data_get(device, dev_data))
             gateway.dev_cnt++;
-        else
-            continue;
+        
+        // Limit device 
+        if (gateway.dev_cnt >= APP_GATEWAY_DEVICE_MAX)
+            break;
     }
 
-    return (gateway.dev_cnt >= 1);
+    return (gateway.dev_cnt > 0);
 }
 
 void gateway_init_device(char *data)
