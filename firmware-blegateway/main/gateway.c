@@ -367,7 +367,7 @@ void gateway_get_known_uuid(void)
     memset(d_buf, 0, 256);
 
     snprintf(t_buf, 64, APP_GATEWAY_PUBLISH_TOPIC, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    snprintf(d_buf, 256, "{\"macAddress\":\"%02x:%02x:%02x:%02x:%02x:%02x\",\"ipaddress\":\"%d:%d:%d:%d\",\"firmwareVersion\":\"%d.%d.%d\",\"data\":\"NET_ID\"}",
+    snprintf(d_buf, 256, APP_MQTT_MSG_KNOWN_UUID_FORMAT,
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
              ip_addr[0], ip_addr[1], ip_addr[2], ip_addr[3],
              FW_MAJOR, FW_MINOR, FW_PATCH);
@@ -462,7 +462,7 @@ static void task_gateway_handle(void *param)
                     break;
                 }
 
-                snprintf(data_buf, sizeof(data_buf), "{\"macAddress\":\"%02x:%02x:%02x:%02x:%02x:%02x\",\"clientMac\":\"%02x:%02x:%02x:%02x:%02x:%02x\",\"data\":\"%s\",\"value\":\"%s\"}",
+                snprintf(data_buf, sizeof(data_buf), APP_MQTT_MSG_DEVICE_SYNC_FORMAT,
                          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5],
                          dev->mac_addr[0], dev->mac_addr[1], dev->mac_addr[2], dev->mac_addr[3], dev->mac_addr[4], dev->mac_addr[5],
                          dev->fields[f].key,
