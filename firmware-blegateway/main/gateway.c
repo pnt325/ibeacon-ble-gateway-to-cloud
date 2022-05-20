@@ -318,10 +318,16 @@ void gateway_beacon_data_set(beacon_data_t *beacon)
         for (uint8_t f = 0; f < dev->field_cnt; f++)
         {
             field_t *field = &dev->fields[f];
+
+            // Verify data type
             if (beacon->type != field->type)
             {
                 continue;
             }
+            
+            // Data update change.
+            if(memcmp(filed->data, beacon->data, 4))
+                continue;
 
             field->update = true;
             field->data[0] = beacon->data[0];
