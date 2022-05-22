@@ -24,5 +24,6 @@ void NVS_DATA_mqtt_pass_get(char* data, size_t* buf_size);
 void NVS_DATA_mqtt_pass_set(char* data);
 void NVS_DATA_init_config_set(uint8_t data);
 void NVS_DATA_init_config_get(uint8_t* data);
+void NVS_DATA_commit(void);
 
 #endif /*_NVS_DATA_H_*/

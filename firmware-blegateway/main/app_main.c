@@ -34,13 +34,18 @@
 
 static const char *APP_TAG = "APP_MAIN";
 
+#define LED_STATE_WIFI_DISCNN  0
+#define LED_STATE_WIFI_CNN     1
+#define LED_STATE_MQTT_DISCNN  2
+#define LED_STATE_MQTT_CNN     3
+
 /* Private function ==========================================*/
 static void wifi_connect_callback(bool connect);                       // WIFI connection callback
 static void beacon_event_callback(beacon_data_t *data);                // Beacon data callback
 static void mqtt_event_connected(void);                                // MQTT connected
 static void mqtt_event_disconnected(void);                             // MQTT disconnected
 static void button_callback(button_state_t state, button_type_t type); // Button pressed callback
-
+static void app_led_state(uint8_t state);                                // App LED control
 /* Private variable ==========================================*/
 static QueueHandle_t btn_queue;
 uint8_t              mac[8];
@@ -94,6 +99,9 @@ void app_main(void)
         NVS_DATA_ssid_get(wifi_name, &len);
         len = 65;
         NVS_DATA_password_get(wifi_pass, &len);
+
+        ESP_LOGI(APP_TAG, "WIFI ssid:%s", wifi_name);
+        ESP_LOGI(APP_TAG, "WIFI pass:%s", wifi_pass);
 
         WIFI_init((const uint8_t *)wifi_name, (const uint8_t *)wifi_pass);
         WIFI_start(wifi_connect_callback);
@@ -155,9 +163,6 @@ void app_main(void)
                         NVS_DATA_init_config_set(0);
                         esp_restart();
                     }
-                    else
-                    {
-                    }
                 }
             }
         }
@@ -167,7 +172,9 @@ void app_main(void)
             uint32_t ms = (uint32_t)(esp_log_timestamp() - btn_press_period);
             if (ms >= APP_BUTTON_RESET_PERIOD)
             {
-                // TODO Handle the reach time button hold time for reset.
+                app_led_ctrl(LedBlue, LedCtrlOn, 0);
+                app_led_ctrl(LedGreen, LedCtrlOff, 0);
+                app_led_ctrl(LedRed, LedCtrlOff, 0);
             }
         }
 
@@ -180,6 +187,11 @@ static void wifi_connect_callback(bool connect)
 {
     static bool first_connected = true;
     ESP_LOGI(APP_TAG, "WIFI connection = %s", connect ? "True" : "False");
+
+    if(connect)
+        app_led_state(LED_STATE_WIFI_CNN);
+    else 
+        app_led_state(LED_STATE_WIFI_DISCNN);
 
     if (connect)
     {
@@ -244,7 +256,7 @@ static void unknown_device_topic_callback(char *data, size_t data_len, char *top
 static void mqtt_event_connected(void)
 {
     static bool first = true;
-    app_led_ctrl(LedGreen, LedCtrlOn, 0);
+    app_led_state(LED_STATE_MQTT_CNN);
     if (first)
     {
         first = false;
@@ -267,10 +279,54 @@ static void mqtt_event_connected(void)
 
 static void mqtt_event_disconnected(void)
 {
-    app_led_ctrl(LedGreen, LedCtrlBlink, APP_LED_BLINKING_PERIOD);
+    app_led_state(LED_STATE_MQTT_DISCNN);
 }
 
 static void button_callback(button_state_t state, button_type_t type)
 {
     xQueueSendFromISR(btn_queue, &state, NULL);
+}
+
+/**
+ * @brief App LED state control
+ * @param state LED control state
+ *              LED_STATE_WIFI_DISCNN
+ *              LED_STATE_WIFI_CNN   
+ *              LED_STATE_MQTT_DISCNN
+ *              LED_STATE_MQTT_CNN   
+ */
+static void app_led_state(uint8_t state)
+{
+    static uint8_t last_state = LED_STATE_MQTT_DISCNN;
+    switch (state)
+    {
+    case LED_STATE_WIFI_DISCNN:
+        app_led_ctrl(LedGreen, LedCtrlOff, 0);
+        app_led_ctrl(LedBlue, LedCtrlOff, 0);
+        app_led_ctrl(LedRed, LedCtrlBlink, APP_LED_BLINKING_PERIOD);
+        last_state = state;
+        break;
+    case LED_STATE_WIFI_CNN:
+        app_led_ctrl(LedGreen, LedCtrlBlink, APP_LED_BLINKING_PERIOD);
+        app_led_ctrl(LedBlue, LedCtrlOff, 0);
+        app_led_ctrl(LedRed, LedCtrlOff, 0);
+        last_state = state;
+        break;
+    case LED_STATE_MQTT_DISCNN:
+        if (last_state == LED_STATE_WIFI_DISCNN)
+            break;
+        app_led_ctrl(LedGreen, LedCtrlBlink, APP_LED_BLINKING_PERIOD);
+        app_led_ctrl(LedBlue, LedCtrlOff, 0);
+        app_led_ctrl(LedRed, LedCtrlOff, 0);
+        last_state = state;
+        break;
+    case LED_STATE_MQTT_CNN:
+        app_led_ctrl(LedGreen, LedCtrlOn, 0);
+        app_led_ctrl(LedBlue, LedCtrlOff, 0);
+        app_led_ctrl(LedRed, LedCtrlOff, 0);
+        last_state = state;
+        break;
+    default:
+        break;
+    }
 }

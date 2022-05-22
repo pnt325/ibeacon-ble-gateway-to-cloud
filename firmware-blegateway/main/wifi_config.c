@@ -271,29 +271,28 @@ static bool process_wifi_config(char *data)
     if (cJSON_GetObjectItem(root, "ssid"))
     {
         ssid = cJSON_GetObjectItem(root, "ssid")->valuestring;
-        ESP_LOGI(TAG, "ssid=%s\n", ssid);
+        ESP_LOGI(TAG, "ssid=%s", ssid);
     }
     if (cJSON_GetObjectItem(root, "password"))
     {
         password = cJSON_GetObjectItem(root, "password")->valuestring;
-        ESP_LOGI(TAG, "password=%s\n", password);
+        ESP_LOGI(TAG, "password=%s", password);
     }
     if (cJSON_GetObjectItem(root, "mqttAddress"))
     {
         mqtt_adr = cJSON_GetObjectItem(root, "mqttAddress")->valuestring;
-        ESP_LOGI(TAG, "mqttAddress=%s\n", password);
+        ESP_LOGI(TAG, "mqttAddress=%s", mqtt_adr);
     }
     if (cJSON_GetObjectItem(root, "mqttUsername"))
     {
         mqtt_usr = cJSON_GetObjectItem(root, "mqttUsername")->valuestring;
-        ESP_LOGI(TAG, "mqttUsername=%s\n", password);
+        ESP_LOGI(TAG, "mqttUsername=%s", mqtt_usr);
     }
     if (cJSON_GetObjectItem(root, "mqttPassword"))
     {
         mqtt_pass = cJSON_GetObjectItem(root, "mqttPassword")->valuestring;
-        ESP_LOGI(TAG, "mqttPassword=%s\n", password);
+        ESP_LOGI(TAG, "mqttPassword=%s", mqtt_pass);
     }
-    cJSON_Delete(root);
 
 /*
     {
@@ -305,11 +304,13 @@ static bool process_wifi_config(char *data)
     }
 */
     
+    bool ret = true;
     if(ssid && password && mqtt_adr && mqtt_usr && mqtt_pass)
     {
         // WIFI password len should equal or larger 8
         if(strlen(password) < 8) {
-            return false;
+            ret = false;
+            goto EXIT;
         }
 
         // Save to NVS
@@ -319,9 +320,14 @@ static bool process_wifi_config(char *data)
         NVS_DATA_mqtt_user_set(mqtt_usr);
         NVS_DATA_mqtt_pass_set(mqtt_pass);
         NVS_DATA_init_config_set(1);
-        return true;
+        NVS_DATA_commit();
+
+        ESP_LOGI(TAG, "Write wifi_config success");
     }
-    return false;
+
+EXIT:
+    cJSON_Delete(root);
+    return ret;
 }
 
 static bool reset_handle(char *data) {

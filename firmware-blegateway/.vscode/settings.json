@@ -33,6 +33,15 @@
     "app_led.h": "c",
     "app_config.h": "c",
     "type_traits": "c",
-    "regex": "cpp"
+    "regex": "cpp",
+    "chrono": "c",
+    "functional": "c",
+    "istream": "c",
+    "ostream": "c",
+    "ratio": "c",
+    "tuple": "c",
+    "utility": "c",
+    "esp_log.h": "c",
+    "stdio.h": "c"
   }
 }

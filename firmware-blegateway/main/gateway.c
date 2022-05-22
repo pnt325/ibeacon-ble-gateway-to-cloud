@@ -332,7 +332,7 @@ void gateway_beacon_data_set(beacon_data_t *beacon)
             }
             
             // Data update change.
-            if(memcmp(filed->data, beacon->data, 4))
+            if(memcmp(field->data, beacon->data, 4))
                 continue;
 
             field->update = true;
